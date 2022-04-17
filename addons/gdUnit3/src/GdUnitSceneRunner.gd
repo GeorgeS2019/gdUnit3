@@ -3,9 +3,18 @@ extends Node
 
 const NO_ARG = GdUnitConstants.NO_ARG
 
+# -- Deprecated functions ----------------------------------------------------------------------------------------------------------------------------------------------
+
 func simulate(frames: int, delta_peer_frame :float) -> GdUnitSceneRunner:
 	push_warning("DEPRECATED!: 'simulate(<frames>, <delta_peer_frame>)' is deprecated. Use  'simulate_frames(<frames>, <delta_milli>) instead.'")
 	return simulate_frames(frames, delta_peer_frame * 1000)
+
+func simulate_until_signal(signal_name :String, arg0=NO_ARG, arg1=NO_ARG, arg2=NO_ARG, arg3=NO_ARG, arg4=NO_ARG, arg5=NO_ARG, arg6=NO_ARG, arg7=NO_ARG, arg8=NO_ARG, arg9=NO_ARG) -> GdUnitSceneRunner:
+	return self
+
+func simulate_until_object_signal(source :Object, signal_name :String, arg0=NO_ARG, arg1=NO_ARG, arg2=NO_ARG, arg3=NO_ARG, arg4=NO_ARG, arg5=NO_ARG, arg6=NO_ARG, arg7=NO_ARG, arg8=NO_ARG, arg9=NO_ARG) -> GdUnitSceneRunner:
+	return self
+
 
 func wait_emit_signal(instance :Object, signal_name :String, args := [], timeout := 2000, expeced := GdUnitAssert.EXPECT_SUCCESS) -> GDScriptFunctionState:
 	push_warning("DEPRECATED!: 'wait_emit_signal(<instance>, <signal_name>, <timeout>)' is deprecated. Use  'await_signal_on(<source>, <signal_name>, <timeout>) instead.'")
@@ -13,7 +22,9 @@ func wait_emit_signal(instance :Object, signal_name :String, args := [], timeout
 
 func wait_func(source :Object, func_name :String, args := [], expeced := GdUnitAssert.EXPECT_SUCCESS) -> GdUnitFuncAssert:
 	push_warning("DEPRECATED!: 'wait_func(<source>, <func_name>, <args>)' is deprecated. Use  'await_func(<func_name>, <args>)' or 'await_func_on(<source>, <func_name>, <args>)' instead.")
-	return await_func_on(source, func_name, args, expeced)
+	return  yield(await_func_on(source, func_name, args, expeced), "completed")
+
+# -----------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Sets the mouse cursor to given position relative to the viewport.
 func set_mouse_pos(pos :Vector2) -> GdUnitSceneRunner:
@@ -73,19 +84,6 @@ func set_time_factor(time_factor := 1.0) -> GdUnitSceneRunner:
 func simulate_frames(frames: int, delta_milli :int = -1) -> GdUnitSceneRunner:
 	return self
 
-# Simulates scene processing until the given signal is emitted by the scene
-# signal_name: the signal to stop the simulation
-# arg..: optional signal arguments to be matched for stop
-func simulate_until_signal(signal_name :String, arg0=NO_ARG, arg1=NO_ARG, arg2=NO_ARG, arg3=NO_ARG, arg4=NO_ARG, arg5=NO_ARG, arg6=NO_ARG, arg7=NO_ARG, arg8=NO_ARG, arg9=NO_ARG) -> GdUnitSceneRunner:
-	return self
-
-# Simulates scene processing until the given signal is emitted by the given object
-# source: the object that should emit the signal
-# signal_name: the signal to stop the simulation
-# arg..: optional signal arguments to be matched for stop	
-func simulate_until_object_signal(source :Object, signal_name :String, arg0=NO_ARG, arg1=NO_ARG, arg2=NO_ARG, arg3=NO_ARG, arg4=NO_ARG, arg5=NO_ARG, arg6=NO_ARG, arg7=NO_ARG, arg8=NO_ARG, arg9=NO_ARG) -> GdUnitSceneRunner:
-	return self
-
 # Waits for the function return value until specified timeout or fails
 # args : optional function arguments
 func await_func(func_name :String, args := [], expeced := GdUnitAssert.EXPECT_SUCCESS) -> GdUnitFuncAssert:
@@ -104,7 +102,7 @@ func await_func_on(source :Object, func_name :String, args := [], expeced := GdU
 func await_signal(signal_name :String, args := [], timeout := 2000 ):
 	pass
 
-# Waits for given signal is emited by the <source> until a specified timeout to fail
+# Waits for given signal is emited by the source until a specified timeout to fail
 # source: the object from which the signal is emitted
 # signal_name: signal name
 # args: the expected signal arguments as an array
@@ -116,7 +114,7 @@ func await_signal_on(source :Object, signal_name :String, args := [], timeout :=
 func maximize_view() -> GdUnitSceneRunner:
 	return self
 
-# Return the current value of the property with the name <name>.
+# Returns the current value of the property from the current scene.
 # name: name of property
 # retuen: the value of the property
 func get_property(name :String):
